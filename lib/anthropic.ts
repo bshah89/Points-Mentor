@@ -3,7 +3,11 @@ import type { MentorContext, MentorMessage } from '../types';
 
 const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY ?? '';
 
-export const anthropic = new Anthropic({ apiKey });
+export const anthropic = new Anthropic({
+  apiKey,
+  // Required for web builds — in production the native app calls the API directly
+  dangerouslyAllowBrowser: true,
+});
 
 export const isAnthropicConfigured = apiKey.startsWith('sk-ant-');
 

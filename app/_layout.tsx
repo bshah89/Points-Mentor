@@ -1,18 +1,20 @@
 import '../global.css';
 import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { getDatabase } from '../lib/sqlite';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   useEffect(() => {
-    // Initialize SQLite offline database
-    getDatabase().catch(console.warn);
+    // SQLite is native-only — skip on web
+    if (Platform.OS !== 'web') {
+      import('../lib/sqlite').then(({ getDatabase }) => getDatabase().catch(console.warn));
+    }
     SplashScreen.hideAsync();
   }, []);
 

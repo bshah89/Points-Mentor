@@ -1,8 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Platform } from 'react-native';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { getCardById } from '../data/cards';
-import { syncUserCardsToOffline } from '../lib/sqlite';
 import type { UserCard, SignUpBonus, LoyaltyBalance } from '../types';
+
+// Lazy SQLite sync — only runs on native (iOS/Android), not web
+function syncOffline(cards: UserCard[]) {
+  if (Platform.OS === 'web') return;
+  import('../lib/sqlite').then(({ syncUserCardsToOffline }) =>
+    syncUserCardsToOffline(cards).catch(console.warn)
+  );
+}
 
 // Demo data for when Supabase is not configured
 const DEMO_USER_CARDS: UserCard[] = [
@@ -126,8 +134,8 @@ export function useUserCards(userId?: string | null) {
       setSignUpBonuses(bonuses);
       setLoyaltyBalances(balancesRes.data ?? []);
 
-      // Sync to offline SQLite
-      syncUserCardsToOffline(cards).catch(console.warn);
+      // Sync to offline SQLite (native only)
+      syncOffline(cards);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
